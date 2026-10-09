@@ -18,7 +18,7 @@ function App() {
       <form
         onSubmit={(e) => {
           // デバッグ用
-          // console.log(e);
+          console.log(e);
 
           // preventDefault：<form>は本来、送信されると入力内容をサーバーに送り、その結果のページに遷移する動きをする。
           // 送信先(action)を書いていなければ今のページに送るので、ページの再読み込みになり、今回の場合入力した値が空になる。
@@ -38,6 +38,7 @@ function App() {
       >
         <input
           value={input}
+          // e.target.value = 今、入力欄に入っている文字
           onChange={(e) => setInput(e.target.value)}
           placeholder="やることを入力"
         />
@@ -46,7 +47,18 @@ function App() {
 
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id}>{todo.title}</li>
+          <li key={todo.id}>
+            {todo.title}
+            <button
+              onClick={() => {
+                setTodos(
+                  todos.filter((t) => t.id !== todo.id),
+                );
+              }}
+            >
+              削除
+            </button>
+          </li>
         ))}
       </ul>
     </div>
