@@ -11,6 +11,13 @@ function App() {
   // 入力欄に今打ってる文字
   const [input, setInput] = useState("");
 
+  // 編集中のTodoのid(編集していないときはnull)
+  const [editingId, setEditingId] = useState<string | null>(
+    null,
+  );
+  // 編集中の入力欄の文字
+  const [editingTitle, setEditingTitle] = useState("");
+
   return (
     <div>
       <h1>Todo</h1>
@@ -46,18 +53,79 @@ function App() {
       </form>
 
       <ul>
+        {/* map：todos の件数分、1件ずつ todo に入れて <li> を作る */}
         {todos.map((todo) => (
           <li key={todo.id}>
-            {todo.title}
-            <button
-              onClick={() => {
-                setTodos(
-                  todos.filter((t) => t.id !== todo.id),
-                );
-              }}
-            >
-              削除
-            </button>
+            {/*
+              各行が「自分が編集中の行か？」を確認する
+              （editingId と、 todo.id を見比べる）
+                一致する   → 編集中の表示（入力欄＋保存・キャンセル）
+                一致しない → 通常の表示（タイトル＋編集・削除）
+            */}
+            {editingId === todo.id ? (
+              // 編集中
+              <>
+                <input
+                  value={editingTitle}
+                  // 打つたびに下書き（editingTitle）だけを更新する。todos はまだ変えない
+                  onChange={(e) =>
+                    setEditingTitle(e.target.value)
+                  }
+                />
+                <button
+                  onClick={() => {
+                    // 編集中の空チェック+trim
+                    if (editingTitle.trim() === "") return;
+                    // 下書きを todos に反映する
+                    // map で全件を見て、編集中の id のものだけタイトルを差し替え、それ以外はそのまま返す
+                    // { ...t, title: ... }：t の中身をコピーして、title だけ上書きした新しいオブジェクト
+                    setTodos(
+                      todos.map((t) =>
+                        t.id === todo.id
+                          ? {
+                              ...t,
+                              title: editingTitle.trim(),
+                            }
+                          : t,
+                      ),
+                    );
+                    // editingId を null にして、全行を通常表示に戻す
+                    setEditingId(null);
+                  }}
+                >
+                  保存
+                </button>
+                {/* キャンセル：editingId を null にするだけ。todos は触っていないので元のタイトルのまま */}
+                <button onClick={() => setEditingId(null)}>
+                  キャンセル
+                </button>
+              </>
+            ) : (
+              // 通常時
+              <>
+                {todo.title}
+                <button
+                  onClick={() => {
+                    // 編集中の表示に
+                    setEditingId(todo.id);
+                    // 今のタイトルを下書きにコピー（入力欄に元の文字が入った状態で始めるため）
+                    setEditingTitle(todo.title);
+                  }}
+                >
+                  編集
+                </button>
+                <button
+                  onClick={() => {
+                    // 削除対象を除いた新しい配列を作る
+                    setTodos(
+                      todos.filter((t) => t.id !== todo.id),
+                    );
+                  }}
+                >
+                  削除
+                </button>
+              </>
+            )}
           </li>
         ))}
       </ul>
